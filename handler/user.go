@@ -1,13 +1,14 @@
 package handler
 
 import (
+	"crowdfund/helper"
 	"crowdfund/users"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type userHandler struct{
+type userHandler struct {
 	userService users.Service
 }
 
@@ -16,7 +17,7 @@ func NewUserHandler(userService users.Service) *userHandler {
 }
 
 func (h *userHandler) RegisterUser(c *gin.Context) {
-	 var input users.RegisterUserInput
+	var input users.RegisterUserInput
 
 	err := c.ShouldBindJSON(&input)
 	if err != nil {
@@ -24,9 +25,11 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 	}
 
 	user, err := h.userService.RegisterUser(input)
-	if err!= nil {
+	if err != nil {
 		c.JSON(http.StatusBadRequest, nil)
 	}
 
-	c.JSON(http.StatusOK, user)
+	response := helper.APIResponse("Account has been Registered", http.StatusOK, "succes", user)
+
+	c.JSON(http.StatusOK, response)
 }
