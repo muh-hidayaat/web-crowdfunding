@@ -3,11 +3,9 @@ package handler
 import (
 	"crowdfund/helper"
 	"crowdfund/users"
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 )
 
 type userHandler struct {
@@ -41,6 +39,36 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 
 	formatter := users.FormatUser(user, "tokentoken")
 	response := helper.APIResponse("Account has been Registered", http.StatusOK, "succes", formatter)
+
+	c.JSON(http.StatusOK, response)
+}
+
+func (h *userHandler) Login(c *gin.Context) {
+	var input users.LoginInput
+
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.APIResponse("Login failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	loggedinUser, err := h.userService.Login(input)
+	if err != nil {
+
+		errorMessage := gin.H{"errors": err.Error()}
+
+		response := helper.APIResponse("Login gagal", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	formatter := users.FormatUser(loggedinUser, "tokentoken")
+	response := helper.APIResponse("Successfully loggedin", http.StatusOK, "succes", formatter)
 
 	c.JSON(http.StatusOK, response)
 }
